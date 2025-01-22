@@ -1,0 +1,6 @@
+backup.bin filter=lfs diff=lfs merge=lfs -text
+flash_32MB.bin filter=lfs diff=lfs merge=lfs -text
+new-32mb-dump.bin filter=lfs diff=lfs merge=lfs -text
+f31-flash_G.rom filter=lfs diff=lfs merge=lfs -text
+r03-f33-flash_G.rom filter=lfs diff=lfs merge=lfs -text
+backup.bin2 filter=lfs diff=lfs merge=lfs -text
