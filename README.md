@@ -1,6 +1,52 @@
-See:
-- https://claude.ai/chat/eba52a74-aca1-485f-9bb2-9f083b737612
-- https://chatgpt.com/c/678620df-93a8-8012-8f68-d391ec728fc4
+These are step by step details/logs for doing a BIOS recovery on a [Gigabyte MZ33-AR0](https://www.gigabyte.com/Enterprise/Server-Motherboard/MZ33-AR0-rev-1x-3x) EPYC motherboard after a supposedly succesful flash from the BIOS (F14 2023-07-28) to the latest available R03_F33 2024-12-02 version.
+
+That flash, despite reporting no problems, upon doing a hard power cycle as instructed, the machine would not boot back up. The BMC reported the boot codes as:
+
+```
+0xA2,0xB7,0xB4,0xA5,0xEE,0xEE,0xEE,0xEE,0xEE,0xEE,
+0xEE,0xEE,0xA6,0xE9,0xEA,0xEC,0xED,0xEE,0xAB,0xE4,
+0xE6,0xAC,0xCF,0xAF,0xFC,0x00,0x00,0xC1,0x0B,0x0C,
+0xE1,0xE2,0xE4,0xE5,0xEB,0xEC,0xED,0xEE,0xEF,0xB1,
+0x98,0x99,0xF0,0xF2,0xB7,0x0C,0x00,0x01,0x0A,0x46,
+0x01,0x0C,0x92,0x93,0x96,0xB7,0x0C,0x00,0x90,0x92,
+0x91,0x0C,0x00,0xD2,0x50,0x01,0x0C,0x00,0x00,0x14,
+0x15,0x07,0x14,0x15,0x07,0x3D,0x50,0x01,0x0C,0x00,
+0x98,0x99,0x01,0x0C,0x00,0x23,0x26,0x01,0x0C,0x08,
+0xD0,0x0C,0xC4,0xD3,0x0C,0xBB,0xBE,0x0C,0x00,0x94,
+0x95,0xB4,0xB7,0x0C,0x00,0xC1,0xA7,0xA8,0xB5,0xD6,
+0x4F,0xC8,0x01,0x0C,0x03,0x51,0x52,0x55,0x56,0x02,
+0x0C,0xC9,0x53,0x54,0x59,0x5A,0x57,0x58,0xCA,0xC4,
+0xCD,0xFD,0xB0,0xB2,0xB3,0xBB,0xEA,0xEB,0xEC,0xED,
+0xE9,0xEA,0xEB,0xEC,0xED,0xE9,0xEA,0xEB,0xEC,0xED,
+0xE9,0xEA,0xEB,0xEC,0xED,0xE9,0xEA,0xEB,0xEC,0xED,
+0xE9,0xEA,0xEB,0xEC,0xED,0xE9,0xEA,0xEB,0xEC,0xED,
+0xE9,0xEA,0xEB,0xEC,0xED,0xEE,0xEE,0xEE,0xEE,0xEE,
+0xEE,0xEE,0xEE,0xE9,0xEA,0xEE,0xEB,0xEC,0xED,0xE9,
+0xEA,0xEE,0xEB,0xEC,0xED,0xEE,0xEE,0xE9,0xEA,0xEB,
+0xEC,0xED,0xE9,0xEA,0xEB,0xEC,0xED,0xE9,0xEA,0xEA,
+0xEC,0xEE,0xEE,0xEE,0xEE,0x00,0xBC,0xFF,0x04,0x11,
+0xD1,
+```
+
+Both display and Serial-over-LAN via BMC also showed no output. Procuring a VGA-HDMI display output adapter was no-dice as well.
+
+Before attempting manual recovery:
+- Removed all hardware except for CPU + 1 DIMM in A1 slot
+- CMOS reset via jumper (15s w/ power supply disconnected)
+- Switched JP1-4 (tinyest DIP switches ever) for BIOS recovery; didn't work?
+- Emailed Gigabyte support (received an email reply after 10 days)
+
+Of course, if you don't have weeks to wait for a response from support, it turns out you can just try flashing your own recovery.
+
+You will need a [CH341A USB flasher](https://github.com/semaf/CH341-USB-EEPROM-Flash-BIOS-Programmer) - these are widely available for $5-10 from AAmazon or AliExpress and most of them look pretty similar to me. I [bought mine for about $9](https://www.amazon.co.jp/dp/B07W7RQ53X).
+
+I used the first video just for a quick visual clipping check, but there are a bunch of YouTube guides available that look pretty informational:
+- https://www.youtube.com/watch?v=ixqgLv76fLI (what I used, fine for visual reference)
+- https://www.youtube.com/watch?v=lmYXiE2fQ6E (uses linux to flash)
+- https://www.youtube.com/watch?v=4qX2zihB6UE (looks like proper reference)
+- https://www.youtube.com/watch?v=MMyDvb_v4uc (voltage selection gotchas?)
+
+Having the smartest LLM at your disposal probably helps with the process as well.
 
 # Clip
 ```
@@ -36,7 +82,7 @@ Thanks for your help!
 No operations were specified.
 ```
 
-Backup
+# Backup
 ```
 ~/Desktop/gigabyte-bios-recovery on ☁️  (us-west-2) took 2s
 🐟 ❯ sudo flashrom -p ch341a_spi -r backup.bin                                                   (base)
@@ -56,10 +102,6 @@ You can also try to follow the instructions here:
 https://www.flashrom.org/contrib_howtos/how_to_mark_chip_tested.html
 Thanks for your help!
 Reading flash... done.
-
-~/Desktop/gigabyte-bios-recovery on ☁️  (us-west-2) took 4m12s
-🐟 ❯ sudo time flashrom -p ch341a_spi -r backup.bin2 -V                                          (base)
-sudo: time: command not found
 
 ~/Desktop/gigabyte-bios-recovery on ☁️  (us-west-2)
 🐟 ❯ time sudo flashrom -p ch341a_spi -r backup.bin2 -V                                          (base)
@@ -581,6 +623,7 @@ Executed in  252.46 secs      fish           external
 
 ~/Desktop/gigabyte-bios-recovery on ☁️  (us-west-2) took 4m12s
 ```
+
 # Verify
 ```
 ~/Desktop/gigabyte-bios-recovery on ☁️  (us-west-2) took 4m12s
@@ -588,6 +631,9 @@ Executed in  252.46 secs      fish           external
 5516522041d9fb89c92d586c87ba1a2dcab1676a  backup.bin
 5516522041d9fb89c92d586c87ba1a2dcab1676a  backup.bin2
 ```
+
+# Flash
+For flashing I tried a couple things but basically in the end I had to make my own doubled up 32MB version from the 16M flash file.
 
 ```
 ~/Desktop/gigabyte-bios-recovery on ☁️  (us-west-2)
@@ -1771,3 +1817,11 @@ Executed in  255.79 secs      fish           external
 2c89975e38bdf98c0330154be1ba91bfc05cfb2a  flash_32MB.bin
 2c89975e38bdf98c0330154be1ba91bfc05cfb2a  new-32mb-dump.bin
 ```
+
+# Success?
+I was able to reboot w/ F31 and it worked fine. I haven't tried R03_F33...
+
+
+Internal Reference:
+- https://claude.ai/chat/eba52a74-aca1-485f-9bb2-9f083b737612
+- https://chatgpt.com/c/678620df-93a8-8012-8f68-d391ec728fc4
